@@ -6,12 +6,14 @@
 #include "server_common.h"
 #include "server_config.h"
 #include "socket_utils.h"
+#include "hashmap.h"
 
 #include <sys/socket.h>
 #include <poll.h>
 #include <assert.h>
 #include <unistd.h>
 #include <netinet/in.h>
+
 
 int main(){
 
