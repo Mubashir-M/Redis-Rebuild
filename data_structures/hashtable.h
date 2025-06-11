@@ -19,6 +19,7 @@ void h_init(HTab *htab, size_t n);
 void h_insert(HTab *htab, HNode *node);
 HNode **h_lookup(HTab *htab, HNode *key, bool (*eq)(HNode *, HNode *));
 HNode *h_detach(HTab *htab, HNode **from);
+bool h_foreach(HTab *htab, bool (*f)(HNode*, void *), void *arg);
 
 #define container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - offsetof(type, member)))
