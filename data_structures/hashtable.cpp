@@ -37,3 +37,14 @@ HNode *h_detach(HTab *htab, HNode **from){
     htab->size--;
     return node;
 };
+
+bool h_foreach(HTab *htab, bool (*f)(HNode*, void *), void *arg){
+    for(size_t i=0; htab->mask != 0 && i <= htab->mask; i++){
+        for(HNode *node = htab->tab[i]; node != NULL; node = node->next){
+            if(!f(node, arg)){
+                return false;
+            }
+        }
+    }
+    return true;
+};

@@ -14,17 +14,12 @@ struct Conn {
     std::vector<uint8_t> outgoing;
 };
 
-struct Response {
-    uint32_t status = 0;
-    std::vector<uint8_t> data;
-
-    const std::string *value_ptr = nullptr;
-};
-
 enum {
     RES_OK = 0, // Operation successful
     RES_ERR = 1, // Generic Error or Unregonized command
     RES_NX = 2, // Key not found (for GET operation)
 };
+
+typedef std::vector<uint8_t> Buffer;
 
 #endif

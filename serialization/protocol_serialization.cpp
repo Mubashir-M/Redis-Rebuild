@@ -46,24 +46,3 @@ int32_t parse_req(const uint8_t *data, size_t size, std::vector<std::string> &ou
     }
     return 0;
 };
-void make_response(const Response &resp, std::vector<uint8_t> &out){
-    uint32_t data_len = 0;
-    uint32_t resp_len = 0;
-
-    if (resp.value_ptr != nullptr){
-        data_len = (uint32_t)resp.value_ptr->size();
-    } else {
-        data_len = (uint32_t)resp.data.size();
-    }
-    resp_len = 4 + data_len;
-
-    buf_append(out, (const uint8_t *)&resp_len, 4);
-    buf_append(out, (const uint8_t *)&resp.status, 4);
-
-
-    if(resp.value_ptr != nullptr){
-        buf_append(out, reinterpret_cast<const uint8_t*>(resp.value_ptr->data()), data_len);
-    } else {
-        buf_append(out, resp.data.data(), data_len);
-    }
-};

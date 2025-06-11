@@ -14,6 +14,27 @@
 #include <netinet/ip.h>
 #include <unistd.h>
 
+static void response_begin(Buffer &out, size_t *header){
+    *header = out.size(); // message header position
+    buf_append_u32(out, 0); // resere space
+};
+
+static size_t response_size(Buffer &out, size_t header) {
+    return out.size() - header - 4;
+}
+
+static void response_end(Buffer &out, size_t header){
+    size_t msg_size = response_size(out, header);
+    if (msg_size > k_max_msg){
+        out.resize(header + 4);
+        out_err(out, ERR_TOO_BIG, "response is too big.");
+        msg_size = response_size(out, header);
+    }
+    // message header
+    uint32_t len = (uint32_t)msg_size;
+    memcpy(&out[header], &len, 4);
+};
+
 bool try_one_request(Conn *conn){
     // check incoming size
     if(conn->incoming.size() < 4){
@@ -42,9 +63,10 @@ bool try_one_request(Conn *conn){
         return false;
     }
 
-    Response resp;
-    do_request(cmd, resp);
-    make_response(resp, conn->outgoing);
+    size_t header_pos = 0;
+    response_begin(conn->outgoing, &header_pos);
+    do_request(cmd, conn->outgoing);
+    response_end(conn->outgoing, header_pos);
 
     buf_consume(conn->incoming, 4 +len);
     return true;
@@ -101,7 +123,7 @@ void handle_read(Conn *conn){
     // add data from buffer to Conn::incoming.
     buf_append(conn->incoming, buf, (size_t)rv);
 
-    // parse requests and generate reponses
+    // parse requests and generate responses
     while(try_one_request(conn)){}
 
     //update readiness
