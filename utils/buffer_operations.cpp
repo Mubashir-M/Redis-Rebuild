@@ -20,3 +20,7 @@ void buf_append_u32(Buffer &buf, uint32_t data){
 void buf_append_i64(Buffer &buf, uint64_t data){
     buf_append(buf, (const uint8_t *)&data, 8);
 };
+
+void buf_append_dbl(Buffer &buf, double data){
+    buf_append(buf, (const uint8_t *)&data, 8);
+};

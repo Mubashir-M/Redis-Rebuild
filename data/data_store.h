@@ -3,21 +3,58 @@
 
 #include "server_common.h"
 #include "hashmap.h"
+#include "zset.h"
 
 #include <map>
 #include <string>
 
 extern HMap g_data;
 
+enum {
+    T_INIT = 0,
+    T_STR = 1,
+    T_ZSET = 2,
+};
+
 struct Entry {
     struct HNode node;
     std::string key;
-    std::string val;
+    // value
+    uint32_t type = 0;
+    // one of the following
+    union {
+        std::string str;
+        ZSet zset;
+    };
+
+    explicit Entry(uint32_t type): type(type){
+        if(type == T_STR){
+            new (&str) std::string;
+        } else if (type == T_ZSET){
+            new (&zset) ZSet;
+        }
+    }
+
+    ~Entry(){
+        if(type == T_STR){
+            str.~basic_string();
+        } else if(type == T_ZSET){
+            zset_clear(&zset);
+        }
+    }
 };
 
+struct LookupKey {
+    struct HNode node; // hashtable node
+    std::string key;
+};
+
+// error code for TAG_ERR
 enum {
-    ERR_UNKNOWN = 1, // unknown command
-    ERR_TOO_BIG = 2, // response too big
+    ERR_UNKNOWN = 1,    // unknown command
+    ERR_TOO_BIG = 2,    // response too big
+    ERR_BAD_TYP = 3,    // unexpected value type
+    ERR_BAD_ARG = 4,    // bad arguments
 };
 
 enum {
@@ -30,7 +67,7 @@ enum {
 };
 
 void out_err(Buffer &out, uint32_t code, const std::string &msg);
-
+uint64_t str_hash(const uint8_t *data, size_t len);
 // Utility functions required for data store operations
 bool entry_eq(HNode *lhs, HNode *rhs);
 

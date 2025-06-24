@@ -24,6 +24,8 @@ inline void avl_init(AVLNode *node) {
 // helpers
 inline uint32_t avl_height(AVLNode *node) { return node ? node->height : 0; }
 inline uint32_t avl_cnt(AVLNode *node) { return node ? node->cnt : 0; }
+AVLNode *avl_offset(AVLNode *node, int64_t offset);
+int64_t avl_rank(AVLNode *node);
 
 // API
 AVLNode *avl_fix(AVLNode *node);

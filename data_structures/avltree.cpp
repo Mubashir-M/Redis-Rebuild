@@ -10,16 +10,7 @@ void avl_update(AVLNode *node){
     node->height = 1 + max(avl_height(node->left), avl_height(node->right));
     node->cnt = 1 + avl_cnt(node->left) + avl_cnt(node->right);
 };
-/*
-static uint8_t avl_height_diff(AVLNode *node){
-    uintptr_t p = (uintptr_t)node->parent;
-    return p & 0b11; // Data from LSB
-};
-static AVLNode* avl_get_parent(AVLNode *node){
-    uintptr_t p = (uintptr_t)node->parent; // clear the LSB
-    return (AVLNode *)(p & (~0b11));
-};
-*/
+
 static AVLNode *rot_left(AVLNode *node) {
     AVLNode *parent = node->parent;
     AVLNode *new_node = node->right;
@@ -104,57 +95,54 @@ AVLNode* avl_fix(AVLNode *node){
     }
 };
 
-static AVLNode* avl_del_easy(AVLNode *node){
-    assert(!node->left || !node->right); // at most 1 child
-
-    AVLNode *child = node->left ? node->left : node->right;
+static AVLNode *avl_del_easy(AVLNode *node) {
+    assert(!node->left || !node->right);    // at most 1 child
+    AVLNode *child = node->left ? node->left : node->right; // can be NULL
     AVLNode *parent = node->parent;
-
-    if(child){
-        child->parent = parent;
+    // update the child's parent pointer
+    if (child) {
+        child->parent = parent; // can be NULL
     }
-
-    if(!parent){
-        return child;
+    // attach the child to the grandparent
+    if (!parent) {
+        return child;   // removing the root node
     }
-
     AVLNode **from = parent->left == node ? &parent->left : &parent->right;
     *from = child;
-
+    // rebalance the updated tree
     return avl_fix(parent);
-};
+}
 
-AVLNode* avl_del(AVLNode *node){
-    if(!node->left || !node->right){
+// detach a node and returns the new root of the tree
+AVLNode *avl_del(AVLNode *node) {
+    // the easy case of 0 or 1 child
+    if (!node->left || !node->right) {
         return avl_del_easy(node);
     }
-
-    // find successor
-    AVLNode* victim = node->right;
-    while(victim->left){
+    // find the successor
+    AVLNode *victim = node->right;
+    while (victim->left) {
         victim = victim->left;
     }
-
     // detach the successor
     AVLNode *root = avl_del_easy(victim);
     // swap with the successor
-    *victim  = *node;
-    if(victim->left){
+    *victim = *node;    // left, right, parent
+    if (victim->left) {
         victim->left->parent = victim;
     }
-    if(victim->right){
+    if (victim->right) {
         victim->right->parent = victim;
     }
-
     // attach the successor to the parent, or update the root pointer
     AVLNode **from = &root;
     AVLNode *parent = node->parent;
-    if(parent){
+    if (parent) {
         from = parent->left == node ? &parent->left : &parent->right;
     }
     *from = victim;
     return root;
-};
+}
 
 void search_and_insert(AVLNode **root, AVLNode *new_node, bool(*less)(AVLNode *, AVLNode *)){
     // find the insertion point
@@ -188,4 +176,33 @@ AVLNode* search_and_delete(AVLNode **root, uint32_t (*cmp)(AVLNode *, void *), v
         }
     }
     return NULL;
+};
+
+AVLNode *avl_offset(AVLNode *node, int64_t offset){
+    int64_t pos = 0; // the rank difference from the starting node
+    while(offset != pos){
+        if(pos < offset && pos + avl_cnt(node->right) >= offset){
+            // the targe is inside the right subtree
+            node = node->right;
+            pos+= avl_cnt(node->left) + 1;
+        } else if (pos > offset && pos - avl_cnt(node->left) <= offset){
+            // the target is inside left subtree
+            node = node->left;
+            pos-= avl_cnt(node->right) + 1;
+        } else {
+            // go to the parent
+            AVLNode *parent = node->parent;
+            if(!parent){
+                return NULL;
+            }
+            if(parent->right == node){
+                pos-=avl_cnt(node->left) + 1;
+            } else {
+                pos+=avl_cnt(node->right) + 1;
+            }
+            node = parent;
+        }
+    }
+
+    return node;
 };
