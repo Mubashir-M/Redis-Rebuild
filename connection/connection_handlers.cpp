@@ -5,6 +5,7 @@
 #include "server_config.h"
 #include "protocol_serialization.h"
 #include "data_store.h"
+#include "utils/timer.h"
 
 #include <assert.h>
 
@@ -135,8 +136,9 @@ void handle_read(Conn *conn){
 
 };
 
-
+// application callback when thelistenin socket is ready
 Conn* handle_accept(int fd){
+    // accept
     struct sockaddr_in client_addr = {};
     socklen_t addrlen = sizeof(client_addr);
     int connfd = accept(fd, (struct sockaddr *)&client_addr, &addrlen);
@@ -150,10 +152,22 @@ Conn* handle_accept(int fd){
     ntohs(client_addr.sin_port)
     );
 
+    // set the new conenction fd to nonblocking mode
     fd_set_nb(connfd);
 
+    // create a "struct Conn"
     Conn *conn = new Conn();
     conn->fd = connfd;
     conn->want_read = true;
+    conn->last_active_ms = get_monotonic_msec();
+    dlist_insert_before(&g_data.idle_list, &conn->idle_node);
+
+    // put it into the map
+    if(g_data.fd2conn.size() <= (size_t)conn->fd){
+        g_data.fd2conn.resize(conn->fd + 1);
+    }
+
+    assert(!g_data.fd2conn[conn->fd]);
+    g_data.fd2conn[conn->fd] = conn;
     return conn;
 };

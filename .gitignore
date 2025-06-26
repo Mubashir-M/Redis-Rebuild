@@ -15,3 +15,5 @@ build/
 # Other common temporary or generated files you might encounter
 # .DS_Store (macOS specific folder metadata)
 .DS_Store
+
+.vscode/

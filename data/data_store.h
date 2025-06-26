@@ -8,7 +8,13 @@
 #include <map>
 #include <string>
 
-extern HMap g_data;
+struct GlobalData {
+    HMap db;
+    // a map of all client connections, keyed by fd
+    std::vector<Conn *> fd2conn;
+    // timers for idle connections
+    DList idle_list;
+};
 
 enum {
     T_INIT = 0,
@@ -74,4 +80,5 @@ bool entry_eq(HNode *lhs, HNode *rhs);
 // The main request dispatcher
 void do_request(std::vector<std::string> &cmd, Buffer &out);
 
+extern GlobalData g_data;
 #endif

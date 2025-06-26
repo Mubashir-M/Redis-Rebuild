@@ -4,7 +4,8 @@
 #include "assert.h"
 #include "zset.h"
 
-HMap g_data;
+
+GlobalData g_data;
 
 bool entry_eq(HNode *lhs, HNode *rhs){
     struct Entry *le = container_of(lhs, struct Entry, node);
@@ -72,7 +73,7 @@ static void do_get(std::vector<std::string> &cmd, Buffer &out){
     key.key.swap(cmd[1]);
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
     // hashtable lookup
-    HNode *node = hm_lookup(&g_data, &key.node, &entry_eq);
+    HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
     if (!node) {
         return out_nil(out);
     }
@@ -86,7 +87,7 @@ static void do_set(std::vector<std::string>& cmd, Buffer &out){
     key.key.swap(cmd[1]);
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
 
-    HNode *node = hm_lookup(&g_data, &key.node, &entry_eq);
+    HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
 
     if(node){
         // found, update the value
@@ -101,7 +102,7 @@ static void do_set(std::vector<std::string>& cmd, Buffer &out){
         ent->key.swap(key.key);
         ent->node.hcode= key.node.hcode;
         ent->str.swap(cmd[2]);
-        hm_insert(&g_data, &ent->node);
+        hm_insert(&g_data.db, &ent->node);
     }
     return out_nil(out);
 };
@@ -111,7 +112,7 @@ static void do_del(std::vector<std::string> &cmd, Buffer &out){
     key.key.swap(cmd[1]);
 
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
-    HNode *node = hm_delete(&g_data, &key.node, &entry_eq);
+    HNode *node = hm_delete(&g_data.db, &key.node, &entry_eq);
     if(node){
         entry_del(container_of(node, Entry, node));
     }
@@ -126,8 +127,8 @@ static bool cb_keys(HNode *node, void *arg){
 };
 
 static void do_keys(std::vector<std::string> &, Buffer &out){
-    out_arr(out, (uint32_t)hm_size(&g_data));
-    hm_foreach(&g_data, &cb_keys, (void *)&out);
+    out_arr(out, (uint32_t)hm_size(&g_data.db));
+    hm_foreach(&g_data.db, &cb_keys, (void *)&out);
 };
 
 
@@ -158,7 +159,7 @@ static ZSet *expect_zset(std::string &s){
     LookupKey key;
     key.key.swap(s);
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
-    HNode *hnode = hm_lookup(&g_data, &key.node, &entry_eq);
+    HNode *hnode = hm_lookup(&g_data.db, &key.node, &entry_eq);
 
     if(!hnode){ // a non-existent key is treaded as an empty zset
         return (ZSet *)&k_empty_zset;
@@ -178,14 +179,14 @@ static void do_zadd(std::vector<std::string> &cmd, Buffer &out){
     key.key.swap(cmd[1]);
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
 
-    HNode *hnode = hm_lookup(&g_data, &key.node, &entry_eq);
+    HNode *hnode = hm_lookup(&g_data.db, &key.node, &entry_eq);
 
     Entry *ent = NULL;
     if(!hnode){
         ent = entry_new(T_ZSET);
         ent->key.swap(key.key);
         ent->node.hcode = key.node.hcode;
-        hm_insert(&g_data, &ent->node);
+        hm_insert(&g_data.db, &ent->node);
     } else {
         ent = container_of(hnode, Entry, node);
         if(ent->type != T_ZSET){

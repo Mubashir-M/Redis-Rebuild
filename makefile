@@ -1,8 +1,12 @@
 # Define your compiler
 CXX = g++
 
+# This instructs the compiler (g++) to target x86_64 architecture
+# when running on an ARM-based M1 Mac.
+ARCH_FLAG = -target x86_64-apple-darwin
+
 # Define compiler flags
-CXXFLAGS = -Wall -Wextra -O2 -g -std=c++17
+CXXFLAGS = -Wall -Wextra -O2 -g -std=c++17 $(ARCH_FLAG)
 
 # Define the build directory for object files
 BUILD_DIR = build
@@ -34,7 +38,8 @@ SERVER_SRCS = 071_server.cpp \
               log/log_utils.cpp \
               serialization/protocol_serialization.cpp \
               socket/socket_utils.cpp \
-              utils/buffer_operations.cpp
+              utils/buffer_operations.cpp \
+              utils/timer.cpp
 
 CLIENT_SRCS = 07_client.cpp
 

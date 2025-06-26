@@ -1,6 +1,8 @@
 #ifndef SERVER_COMMON_H
 #define SERVER_COMMON_H
 
+#include "DList.h"
+
 #include <vector>
 
 struct Conn {
@@ -12,6 +14,10 @@ struct Conn {
 
     std::vector<uint8_t> incoming;
     std::vector<uint8_t> outgoing;
+
+    // timer
+    uint64_t last_active_ms = 0;
+    DList idle_node;
 };
 
 enum {
