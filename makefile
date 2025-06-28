@@ -35,6 +35,7 @@ SERVER_SRCS = 071_server.cpp \
               data_structures/hashtable.cpp \
               data_structures/avltree.cpp \
               data_structures/zset.cpp \
+              data_structures/heap.cpp \
               log/log_utils.cpp \
               serialization/protocol_serialization.cpp \
               socket/socket_utils.cpp \

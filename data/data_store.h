@@ -4,6 +4,7 @@
 #include "server_common.h"
 #include "hashmap.h"
 #include "zset.h"
+#include "heap.h"
 
 #include <map>
 #include <string>
@@ -14,6 +15,8 @@ struct GlobalData {
     std::vector<Conn *> fd2conn;
     // timers for idle connections
     DList idle_list;
+    // timers for TTLs
+    std::vector<HeapItem> heap;
 };
 
 enum {
@@ -32,6 +35,10 @@ struct Entry {
         std::string str;
         ZSet zset;
     };
+
+    // for TTL
+    size_t heap_idx = -1;
+    //
 
     explicit Entry(uint32_t type): type(type){
         if(type == T_STR){
@@ -76,6 +83,9 @@ void out_err(Buffer &out, uint32_t code, const std::string &msg);
 uint64_t str_hash(const uint8_t *data, size_t len);
 // Utility functions required for data store operations
 bool entry_eq(HNode *lhs, HNode *rhs);
+
+void entry_del(Entry *ent);
+void entry_set_ttl(Entry *ent, int64_t ttl_ms);
 
 // The main request dispatcher
 void do_request(std::vector<std::string> &cmd, Buffer &out);
