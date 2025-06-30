@@ -79,7 +79,6 @@ static void process_timers(){
         assert(node == &ent->node);
         fprintf(stderr, "key expired: %s\n", ent->key.c_str());
         // delete the key
-        entry_set_ttl(ent, -1);
         entry_del(ent);
         if(nworks++ >= k_max_works){
             // don't stall the server if too many keys are expiring at once
@@ -92,6 +91,7 @@ int main(){
 
     // initialization
     dlist_init(&g_data.idle_list);
+    thread_pool_init(&g_data.thread_pool, 4);
 
     // the listenin socket
     int fd = socket(AF_INET, SOCK_STREAM, 0);

@@ -21,6 +21,7 @@ SRC_DIRS = . \
            serialization \
            socket \
            tests \
+           threads \
            utils
 
 # Include directories (where .h files reside for compiler -I flags)
@@ -40,6 +41,7 @@ SERVER_SRCS = 071_server.cpp \
               serialization/protocol_serialization.cpp \
               socket/socket_utils.cpp \
               utils/buffer_operations.cpp \
+              threads/thread_pool.cpp \
               utils/timer.cpp
 
 CLIENT_SRCS = 07_client.cpp

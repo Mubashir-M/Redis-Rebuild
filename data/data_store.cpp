@@ -66,11 +66,26 @@ static Entry *entry_new(uint32_t type){
     return ent;
 };
 
-void entry_del(Entry *ent){
+static void entry_del_sync(Entry *ent){
     if(ent->type == T_ZSET){
         zset_clear(&ent->zset);
     }
     delete ent;
+};
+static void entry_del_func(void *arg){
+    entry_del_sync((Entry *)arg);
+};
+
+void entry_del(Entry *ent){
+    // unlink it from any data structures
+    entry_set_ttl(ent, -1);
+    // run the destructor in a thread pool for large data structures
+    size_t set_size = (ent->type == T_ZSET) ? hm_size(&ent->zset.hmap) : 0;
+    if(set_size > k_large_container_size){
+        thread_pool_queue(&g_data.thread_pool, &entry_del_func, ent);
+    } else {
+        entry_del_sync(ent); // small;  avoid context swtiches
+    }
 };
 
 void out_err(Buffer &out, uint32_t code, const std::string &msg){

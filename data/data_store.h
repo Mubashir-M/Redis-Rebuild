@@ -5,6 +5,7 @@
 #include "hashmap.h"
 #include "zset.h"
 #include "heap.h"
+#include "thread_pool.h"
 
 #include <map>
 #include <string>
@@ -17,6 +18,9 @@ struct GlobalData {
     DList idle_list;
     // timers for TTLs
     std::vector<HeapItem> heap;
+    // the thread pool
+    ThreadPool thread_pool;
+    
 };
 
 enum {
