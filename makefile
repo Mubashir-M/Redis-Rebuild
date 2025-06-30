@@ -12,48 +12,45 @@ CXXFLAGS = -Wall -Wextra -O2 -g -std=c++17 $(ARCH_FLAG)
 BUILD_DIR = build
 
 # Source directories (where .cpp files reside)
-SRC_DIRS = . \
-           config \
-           connection \
-           data \
-           data_structures \
-           log \
-           serialization \
-           socket \
-           tests \
-           threads \
-           utils
+SRC_DIRS = src \
+           src/config \
+           src/connection \
+           src/data \
+           src/data_structures \
+           src/log \
+           src/serialization \
+           src/socket \
+           src/threads \
+           src/utils \
+           tests
 
 # Include directories (where .h files reside for compiler -I flags)
 INC_DIRS = $(SRC_DIRS)
 CXXFLAGS += $(addprefix -I,$(INC_DIRS))
 
 # --- Source files for each target ---
-SERVER_SRCS = 071_server.cpp \
-              connection/connection_handlers.cpp \
-              data/data_store.cpp \
-              data_structures/hashmap.cpp \
-              data_structures/hashtable.cpp \
-              data_structures/avltree.cpp \
-              data_structures/zset.cpp \
-              data_structures/heap.cpp \
-              log/log_utils.cpp \
-              serialization/protocol_serialization.cpp \
-              socket/socket_utils.cpp \
-              utils/buffer_operations.cpp \
-              threads/thread_pool.cpp \
-              utils/timer.cpp
+SERVER_SRCS = src/server.cpp \
+              src/connection/connection_handlers.cpp \
+              src/data/data_store.cpp \
+              src/data_structures/hashmap.cpp \
+              src/data_structures/hashtable.cpp \
+              src/data_structures/avltree.cpp \
+              src/data_structures/zset.cpp \
+              src/data_structures/heap.cpp \
+              src/log/log_utils.cpp \
+              src/serialization/protocol_serialization.cpp \
+              src/socket/socket_utils.cpp \
+              src/utils/buffer_operations.cpp \
+              src/threads/thread_pool.cpp \
+              src/utils/timer.cpp
 
-CLIENT_SRCS = 07_client.cpp
+CLIENT_SRCS = src/client.cpp
 
 # --- Test source files ---
 TEST_AVL_SRCS = tests/test_avl.cpp
 TEST_OFFSET_SRCS = tests/test_offset.cpp
 
 # --- Generate object file names for each target ---
-# Example: data/data_store.cpp -> build/data/data_store.o
-# Note: $(BUILD_DIR)/%.o correctly produces 'build/071_server.o' for '071_server.cpp'
-# and 'build/tests/test_avl.o' for 'tests/test_avl.cpp'.
 SERVER_OBJS = $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SERVER_SRCS))
 CLIENT_OBJS = $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CLIENT_SRCS))
 TEST_AVL_OBJS = $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(TEST_AVL_SRCS))
@@ -101,18 +98,18 @@ $(CLIENT_TARGET): $(CLIENT_OBJS)
 	$(CXX) $(CXXFLAGS) $(CLIENT_OBJS) $(LIBS) -o $@
 
 # --- Rule to link the TEST_AVL executable ---
-$(TEST_AVL_TARGET): $(TEST_AVL_OBJS) $(BUILD_DIR)/data_structures/avltree.o \
-                    $(BUILD_DIR)/data_structures/hashtable.o \
-                    $(BUILD_DIR)/log/log_utils.o \
-                    $(BUILD_DIR)/utils/buffer_operations.o
+$(TEST_AVL_TARGET): $(TEST_AVL_OBJS) $(BUILD_DIR)/src/data_structures/avltree.o \
+                    $(BUILD_DIR)/src/data_structures/hashtable.o \
+                    $(BUILD_DIR)/src/log/log_utils.o \
+                    $(BUILD_DIR)/src/utils/buffer_operations.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(TEST_OFFSET_TARGET): $(TEST_OFFSET_OBJS) $(BUILD_DIR)/data_structures/zset.o \
-                       $(BUILD_DIR)/data_structures/avltree.o \
-                       $(BUILD_DIR)/data_structures/hashtable.o \
-                       $(BUILD_DIR)/data_structures/hashmap.o \
-                       $(BUILD_DIR)/log/log_utils.o \
-                       $(BUILD_DIR)/utils/buffer_operations.o
+$(TEST_OFFSET_TARGET): $(TEST_OFFSET_OBJS) $(BUILD_DIR)/src/data_structures/zset.o \
+                       $(BUILD_DIR)/src/data_structures/avltree.o \
+                       $(BUILD_DIR)/src/data_structures/hashtable.o \
+                       $(BUILD_DIR)/src/data_structures/hashmap.o \
+                       $(BUILD_DIR)/src/log/log_utils.o \
+                       $(BUILD_DIR)/src/utils/buffer_operations.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # Clean up compiled files and executables
