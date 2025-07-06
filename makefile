@@ -6,7 +6,7 @@ CXX = g++
 ARCH_FLAG = -target x86_64-apple-darwin
 
 # Define compiler flags
-CXXFLAGS = -Wall -Wextra -O2 -g -std=c++17 $(ARCH_FLAG)
+CXXFLAGS = -Wall -Wextra -O0 -g -std=c++17 $(ARCH_FLAG)
 
 # Define the build directory for object files
 BUILD_DIR = build
